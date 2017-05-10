@@ -71,7 +71,7 @@ Host Server102
         PasswordAuthentication no
         PreferredAuthentications publickey
         ExitOnForwardFailure yes
-        # local iface tap102 remote iface tap202
+        # local iface tap102 remote iface tap201
         Tunnel ethernet
         TunnelDevice 102:201
 ```
