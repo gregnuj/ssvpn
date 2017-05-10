@@ -40,7 +40,7 @@ IFACES="tap101 tap102"
 HOSTS="Server101 Server102"
 ```
 
-Add to ~/.ssh/config or /etc/ssh/ssh_config
+Client201: Add to ~/.ssh/config or /etc/ssh/ssh_config
 ```
 Host Server101
         Hostname realname.example.com
@@ -75,7 +75,7 @@ IFACES="tap101 tap102"
 HOSTS="Server101 Server102"
 ```
 
-Add to ~/.ssh/config or /etc/ssh/ssh_config
+Client201: Add to ~/.ssh/config or /etc/ssh/ssh_config
 ```
 Host Server101
         Hostname realname.example.com
