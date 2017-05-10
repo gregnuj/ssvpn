@@ -171,16 +171,16 @@ do_stop()
 case "$1" in
   stop)
         [ -z "${HOSTS}" ] || do_stop_hosts
-        [ -z "${IFACE}S" ] || do_stop_ifaces
+        [ -z "${IFACES}" ] || do_stop_ifaces
         [ -z "${BRIDGE}" ] || do_stop_bridge
         ;;
   start|restart|force-reload)
         [ -z "${HOSTS}" ] || do_stop_hosts
-        [ -z "${IFACE}S" ] || do_stop_ifaces
+        [ -z "${IFACES}" ] || do_stop_ifaces
         [ -z "${BRIDGE}" ] || do_stop_bridge
         sleep 1
         [ -z "${BRIDGE}" ] || do_start_bridge
-        [ -z "${IFACE}S" ] || do_start_ifaces
+        [ -z "${IFACES}" ] || do_start_ifaces
         [ -z "${HOSTS}" ] || do_start_hosts
         ;;
   *)
