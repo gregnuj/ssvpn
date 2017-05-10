@@ -10,6 +10,13 @@ Instructions
 
 Example configuration:
 
+on all nodes (Server101, Server102, Client201, Client202):
+```
+cd ~
+wget https://raw.githubusercontent.com/gregnuj/ssvpn/master/ssvpn
+sudo cp svpn /etc/init.d/ssvpn
+```
+
 Server101: /etc/default/ssvpn
 ```
 #!/bin/sh
