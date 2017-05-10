@@ -5,11 +5,11 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="svpn service"
-NAME="svpn"
+DESC="ssvpn service"
+NAME="ssvpn"
 SCRIPTNAME=/etc/init.d/${NAME}
 DEFAULTS=/etc/default/${NAME}
-LOG=/var/log/svpn
+LOG=/var/log/${NAME}
 VERBOSE=yes
 HOSTNAME=`hostname -s`
 
@@ -93,7 +93,7 @@ do_start_hosts()
             do_log "Starting ${DESC} to ${HOST}"
             DAEMON="/usr/bin/ssh"
             PIDFILE="/var/run/${NAME}-${HOST}.pid"
-            DAEMON_ARGS="-qf ${HOST} service svpn restart"
+            DAEMON_ARGS="-qf ${HOST} service ${NAME} restart"
             do_start
             case "$?" in
                 0|1) [ "${VERBOSE}" != no ] && log_end_msg 0 ;;
