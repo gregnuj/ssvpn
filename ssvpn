@@ -1,0 +1,192 @@
+#! /bin/sh
+### BEGIN INIT INFO
+### END INIT INFO
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="svpn service"
+NAME="svpn"
+SCRIPTNAME=/etc/init.d/${NAME}
+DEFAULTS=/etc/default/${NAME}
+LOG=/var/log/svpn
+VERBOSE=yes
+HOSTNAME=`hostname -s`
+
+# Read configuration variable file if it is present
+[ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
+
+# Log to log
+exec >> $LOG
+exec 2>&1
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+
+do_log()
+{
+    TIMESTAMP=`date "+%Y-%m-%d %H:%M:%S"`
+    echo "$TIMESTAMP: $HOSTNAME: $*"
+}
+
+do_start_bridge()
+{
+        ip link show ${BRIDGE} 1>/dev/null 2>&1
+        if [ $? -gt 0 ]; then
+            do_log "Creating iface ${BRIDGE}"
+            ip link add name ${BRIDGE} type bridge
+        fi
+        if [ -n "${ADDRESS}" ]; then
+            do_log "Setting ip address of ${BRIDGE} to ${ADDRESS}"
+            ip addr add ${ADDRESS} brd + dev ${BRIDGE}
+        fi
+        do_log "Setting state of ${BRIDGE} to up"
+        ip link set ${BRIDGE} up
+        return $?
+}
+
+do_stop_bridge()
+{
+        if [ -n "${ADDRESS}" ]; then
+            do_log "Flushing ip addresses from ${BRIDGE}"
+            ip addr flush ${BRIDGE}
+        fi
+        do_log "Setting state of ${BRIDGE} to down"
+        ip link set ${BRIDGE} down
+        return $?
+}
+
+do_start_ifaces()
+{
+        for IFACE in ${IFACES}; do
+            ip link show ${IFACE} 1>/dev/null 2>&1
+            if [ $? -gt 0 ]; then
+                do_log  "Creating iface ${IFACE}"
+                ip tuntap add dev ${IFACE} mode tap
+            fi
+            do_log  "Associating ${IFACE} to ${BRIDGE}"
+            ip link set ${IFACE} master ${BRIDGE}
+            do_log "Setting state of ${IFACE} to up"
+            ip link set ${IFACE} up
+        done
+}
+
+do_stop_ifaces()
+{
+        for IFACE in ${IFACES}; do
+            do_log "Setting state of ${IFACE} to down"
+            ip link set ${IFACE} down
+            do_log  "Disassociating ${IFACE} from ${BRIDGE}"
+            ip link set ${IFACE} nomaster
+        done
+}
+
+do_start_hosts()
+{
+        for HOST in ${HOSTS}; do
+            do_log "Starting ${DESC} to ${HOST}"
+            DAEMON="/usr/bin/ssh"
+            PIDFILE="/var/run/${NAME}-${HOST}.pid"
+            DAEMON_ARGS="-qf ${HOST} service svpn restart"
+            do_start
+            case "$?" in
+                0|1) [ "${VERBOSE}" != no ] && log_end_msg 0 ;;
+                2) [ "${VERBOSE}" != no ] && log_end_msg 1 ;;
+            esac
+        done
+}
+
+do_stop_hosts()
+{
+        for HOST in ${HOSTS}; do
+            do_log "Stopping ${DESC} to ${HOST}"
+            DAEMON="/usr/bin/ssh"
+            PIDFILE="/var/run/${NAME}-${HOST}.pid"
+            do_stop
+            case "$?" in
+                0|1) [ "${VERBOSE}" != no ] && log_end_msg 0 ;;
+                2) [ "${VERBOSE}" != no ] && log_end_msg 1 ;;
+            esac
+        done
+}
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+        # Return
+        #   0 if daemon has been started
+        #   1 if daemon was already running
+        #   2 if daemon could not be started
+        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+                || return 1
+        start-stop-daemon --start --quiet --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- \
+                $DAEMON_ARGS \
+                || return 2
+        # Add code here, if necessary, that waits for the process to be ready
+        # to handle requests from services started subsequently which depend
+        # on this one.  As a last resort, sleep for some time.
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+        # Return
+        #   0 if daemon has been stopped
+        #   1 if daemon was already stopped
+        #   2 if daemon could not be stopped
+        #   other if a failure occurred
+        start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $HOST
+        RETVAL="$?"
+        [ "$RETVAL" = 2 ] && return 2
+        # Wait for children to finish too if this is a daemon that forks
+        # and if the daemon is only ever run from this initscript.
+        # If the above conditions are not satisfied then add some other code
+        # that waits for the process to drop all resources that could be
+        # needed by services started subsequently.  A last resort is to
+        # sleep for some time.
+        pgrep -a 'ssh' | grep "${HOST}" | awk '{print $1}' | while read pid; do
+           if [ "$pid" ]; then
+               kill -9 $pid;
+               RETVAL="$?"
+           fi
+        done
+
+        #start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+        #[ "$?" = 2 ] && return 2
+        # Many daemons don't delete their pidfiles when they exit.
+        rm -f $PIDFILE
+        return "$RETVAL"
+}
+
+case "$1" in
+  stop)
+        [ -z "${HOSTS}" ] || do_stop_hosts
+        [ -z "${IFACE}S" ] || do_stop_ifaces
+        [ -z "${BRIDGE}" ] || do_stop_bridge
+        ;;
+  start|restart|force-reload)
+        [ -z "${HOSTS}" ] || do_stop_hosts
+        [ -z "${IFACE}S" ] || do_stop_ifaces
+        [ -z "${BRIDGE}" ] || do_stop_bridge
+        sleep 1
+        [ -z "${BRIDGE}" ] || do_start_bridge
+        [ -z "${IFACE}S" ] || do_start_ifaces
+        [ -z "${HOSTS}" ] || do_start_hosts
+        ;;
+  *)
+        echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+        exit 3
+        ;;
+esac
+
+:
