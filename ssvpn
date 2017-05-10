@@ -93,7 +93,7 @@ do_start_hosts()
             do_log "Starting ${DESC} to ${HOST}"
             DAEMON="/usr/bin/ssh"
             PIDFILE="/var/run/${NAME}-${HOST}.pid"
-            DAEMON_ARGS="-qf ${HOST} service ${NAME} restart"
+            DAEMON_ARGS="-qf ${HOST} service ${NAME} start"
             do_start
             case "$?" in
                 0|1) [ "${VERBOSE}" != no ] && log_end_msg 0 ;;
@@ -169,12 +169,17 @@ do_stop()
 }
 
 case "$1" in
+  start)
+        [ -z "${BRIDGE}" ] || do_start_bridge
+        [ -z "${IFACES}" ] || do_start_ifaces
+        [ -z "${HOSTS}" ] || do_start_hosts
+        ;;
   stop)
         [ -z "${HOSTS}" ] || do_stop_hosts
         [ -z "${IFACES}" ] || do_stop_ifaces
         [ -z "${BRIDGE}" ] || do_stop_bridge
         ;;
-  start|restart|force-reload)
+  restart|force-reload)
         [ -z "${HOSTS}" ] || do_stop_hosts
         [ -z "${IFACES}" ] || do_stop_ifaces
         [ -z "${BRIDGE}" ] || do_stop_bridge
