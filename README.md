@@ -15,13 +15,8 @@ on all nodes (Server101, Server102, Client201, Client202):
 cd ~
 wget https://raw.githubusercontent.com/gregnuj/ssvpn/master/ssvpn
 sudo cp svpn /etc/init.d/ssvpn
-cd /etc/rc0.d/ && sudo ln -s ../init.d/ssvpn K20ssvpn
-cd /etc/rc1.d/ && sudo ln -s ../init.d/ssvpn K20ssvpn
-cd /etc/rc2.d/ && sudo ln -s ../init.d/ssvpn S20ssvpn
-cd /etc/rc3.d/ && sudo ln -s ../init.d/ssvpn S20ssvpn
-cd /etc/rc4.d/ && sudo ln -s ../init.d/ssvpn S20ssvpn
-cd /etc/rc5.d/ && sudo ln -s ../init.d/ssvpn S20ssvpn
-cd /etc/rc6.d/ && sudo ln -s ../init.d/ssvpn K20ssvpn
+
+# add 'service start ssvpn' to /etc/rc.local to start on boot
 ```
 
 Server101: /etc/default/ssvpn
