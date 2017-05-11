@@ -187,8 +187,12 @@ case "$1" in
         [ -z "${BRIDGE}" ] || do_stop_bridge
         ;;
   start|restart|force-reload)
-        shift
-        if echo "$*" | grep -qv $HOSTNAME; then
+        [ -n "$2" ] && ID=$2 || ID=$RANDOM 
+        if [ -e "/var/run/ssvpnd-$ID" ]; then
+            echo "ssvpn-$ID running"
+        else
+            rm -f /var/run/ssvpnd-*
+            touch "/var/run/ssvpnd-$ID
             [ -z "${HOSTS}" ] || do_stop_hosts
             [ -z "${IFACES}" ] || do_stop_ifaces
             [ -z "${BRIDGE}" ] || do_stop_bridge
