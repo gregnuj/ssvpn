@@ -24,7 +24,7 @@ DEFAULTS=/etc/default/${NAME}
 LOG=/var/log/${NAME}
 VERBOSE=yes
 HOSTNAME=`hostname -s`
-[ -n "$2" ] && ID=$2 || ID=$RANDOM 
+[ -n "$2" ] && ID=$2 || ID=$$
 
 # Read configuration variable file if it is present
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
