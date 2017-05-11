@@ -24,6 +24,7 @@ DEFAULTS=/etc/default/${NAME}
 LOG=/var/log/${NAME}
 VERBOSE=yes
 HOSTNAME=`hostname -s`
+[ -n "$2" ] && ID=$2 || ID=$RANDOM 
 
 # Read configuration variable file if it is present
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
@@ -105,7 +106,7 @@ do_start_hosts()
             do_log "Starting ${DESC} to ${HOST}"
             DAEMON="/usr/bin/ssh"
             PIDFILE="/var/run/${NAME}-${HOST}.pid"
-            DAEMON_ARGS="-qf ${HOST} service ${NAME} restart $HOSTNAME $*"
+            DAEMON_ARGS="-qf ${HOST} service ${NAME} restart ${ID}"
             do_start
             case "$?" in
                 0|1) [ "${VERBOSE}" != no ] && log_end_msg 0 ;;
@@ -187,7 +188,6 @@ case "$1" in
         [ -z "${BRIDGE}" ] || do_stop_bridge
         ;;
   start|restart|force-reload)
-        [ -n "$2" ] && ID=$2 || ID=$RANDOM 
         if [ -e "/var/run/ssvpnd-$ID" ]; then
             echo "ssvpn-$ID running"
         else
@@ -199,7 +199,7 @@ case "$1" in
             sleep 1
             [ -z "${BRIDGE}" ] || do_start_bridge
             [ -z "${IFACES}" ] || do_start_ifaces
-            [ -z "${HOSTS}" ] || do_start_hosts $@
+            [ -z "${HOSTS}" ] || do_start_hosts
         fi
         ;;
   *)
