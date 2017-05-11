@@ -13,8 +13,9 @@ Example configuration:
 on all nodes (Server101, Server102, Client201, Client202):
 ```
 cd ~
+rm ssvpn
 wget https://raw.githubusercontent.com/gregnuj/ssvpn/master/ssvpn
-sudo cp svpn /etc/init.d/ssvpn
+sudo cp ssvpn /etc/init.d/ssvpn
 sudo chmod 755 /etc/init.d/ssvpn
 
 # add 'service start ssvpn' to /etc/rc.local to start on boot
