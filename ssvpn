@@ -19,6 +19,7 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="ssvpn service"
 NAME="ssvpn"
+USER="root"
 SCRIPTNAME=/etc/init.d/${NAME}
 DEFAULTS=/etc/default/${NAME}
 LOG=/var/log/${NAME}
@@ -106,7 +107,7 @@ do_start_hosts()
             do_log "Starting ${DESC} to ${HOST}"
             DAEMON="/usr/bin/ssh"
             PIDFILE="/var/run/${NAME}-${HOST}.pid"
-            DAEMON_ARGS="-qf ${HOST} service ${NAME} restart ${ID}"
+            DAEMON_ARGS="-qf ${USER}@${HOST} service ${NAME} restart ${ID}"
             do_start
             case "$?" in
                 0|1) [ "${VERBOSE}" != no ] && log_end_msg 0 ;;
