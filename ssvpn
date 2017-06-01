@@ -82,7 +82,7 @@ do_start_ifaces()
             ip link show ${IFACE} 1>/dev/null 2>&1
             if [ $? -gt 0 ]; then
                 do_log  "Creating iface ${IFACE}"
-                ip tuntap add dev ${IFACE} mode tap
+                ip tuntap add dev ${IFACE} mode tap user ${USER}
             fi
             do_log  "Associating ${IFACE} to ${BRIDGE}"
             ip link set ${IFACE} master ${BRIDGE}
@@ -98,6 +98,8 @@ do_stop_ifaces()
             ip link set ${IFACE} down
             do_log  "Disassociating ${IFACE} from ${BRIDGE}"
             ip link set ${IFACE} nomaster
+            do_log  "Deleteing ${IFACE}"
+            ip link del ${IFACE}
         done
 }
 
