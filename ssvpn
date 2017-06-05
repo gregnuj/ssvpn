@@ -36,6 +36,7 @@ HOSTNAME=`hostname -s`
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
 
 # Log to log
+chown $USER $LOG
 exec >> $LOG
 exec 2>&1
 
@@ -46,6 +47,7 @@ exec 2>&1
 # Depend on lsb-base (>= 3.2-14) to ensure that this file is present
 # and status_of_proc is working.
 . /lib/lsb/init-functions
+
 
 
 do_log()
