@@ -16,7 +16,7 @@
 # Do NOT "set -e"
 
 # Set 'DEBUG=1' environment variable to see detailed output for debugging
-if [[ -n "$DEBUG" ]]; then
+if [ -n "$DEBUG" ]; then
     set -x
 fi
 
