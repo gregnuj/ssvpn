@@ -32,7 +32,7 @@ VERBOSE=yes
 HOSTNAME=`hostname -s`
 
 # verify root
-if [ `id -un` != 0 ]; then
+if [ `id -u` != 0 ]; then
       echo "you must be root to execute this script"
       exit 2
 fi
