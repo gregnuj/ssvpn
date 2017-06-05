@@ -24,7 +24,8 @@ fi
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="ssvpn service"
 NAME="ssvpn"
-USER="root"
+USER=root
+EUSER=`id -un`
 SCRIPTNAME=/etc/init.d/${NAME}
 DEFAULTS=/etc/default/${NAME}
 LOG=/var/log/${NAME}
@@ -36,9 +37,11 @@ HOSTNAME=`hostname -s`
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
 
 # Log to log
-chown $USER $LOG
-exec >> $LOG
-exec 2>&1
+[ "$EUSER" = root ] && chown $USER $LOG
+if [ -w $LOG ]; then
+    exec >> $LOG
+    exec 2>&1
+fi
 
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
@@ -194,8 +197,8 @@ do_stop()
 case "$1" in
   stop)
         [ -z "${HOSTS}" ] || do_stop_hosts
-        [ -z "${IFACES}" ] || do_stop_ifaces
-        [ -z "${BRIDGE}" ] || do_stop_bridge
+        [ "$EUSER" = root ] && [ -z "${IFACES}" ] || do_stop_ifaces
+        [ "$EUSER" = root ] && [ -z "${BRIDGE}" ] || do_stop_bridge
         ;;
   start|restart|force-reload)
         if [ -e "/var/run/ssvpnd-${ID}" ]; then
@@ -204,11 +207,11 @@ case "$1" in
             rm -f /var/run/ssvpnd-*
             touch "/var/run/ssvpnd-${ID}"
             [ -z "${HOSTS}" ] || do_stop_hosts
-            [ -z "${IFACES}" ] || do_stop_ifaces
-            [ -z "${BRIDGE}" ] || do_stop_bridge
+            [ "$EUSER" = root ] &&[ -z "${IFACES}" ] || do_stop_ifaces
+            [ "$EUSER" = root ] &&[ -z "${BRIDGE}" ] || do_stop_bridge
             sleep 1
-            [ -z "${BRIDGE}" ] || do_start_bridge
-            [ -z "${IFACES}" ] || do_start_ifaces
+            [ "$EUSER" = root ] &&[ -z "${BRIDGE}" ] || do_start_bridge
+            [ "$EUSER" = root ] &&[ -z "${IFACES}" ] || do_start_ifaces
             [ -z "${HOSTS}" ] || do_start_hosts
         fi
         ;;
