@@ -43,11 +43,8 @@ fi
 # Read configuration variable file if it is present
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
 
-# only root can use a diff user
-[ "$EUSER" = root ] || USER=$EUSER
-
 # Log to log
-[ "$EUSER" = root ] && chown $USER $LOG
+chown $USER $LOG
 if [ -w $LOG ]; then
     exec >> $LOG
     exec 2>&1
