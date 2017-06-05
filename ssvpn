@@ -25,16 +25,26 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="ssvpn service"
 NAME="ssvpn"
 USER=root
-EUSER=`id -un`
 SCRIPTNAME=/etc/init.d/${NAME}
 DEFAULTS=/etc/default/${NAME}
 LOG=/var/log/${NAME}
 VERBOSE=yes
 HOSTNAME=`hostname -s`
+
+# verify root
+if [ `id -un` != 0 ]; then
+      echo "you must be root to execute this script"
+      exit 2
+fi
+
+# Capture id if used
 [ -n "$2" ] && ID=$2 || ID=$$
 
 # Read configuration variable file if it is present
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
+
+# only root can use a diff user
+[ "$EUSER" = root ] || USER=$EUSER
 
 # Log to log
 [ "$EUSER" = root ] && chown $USER $LOG
@@ -50,8 +60,6 @@ fi
 # Depend on lsb-base (>= 3.2-14) to ensure that this file is present
 # and status_of_proc is working.
 . /lib/lsb/init-functions
-
-
 
 do_log()
 {
@@ -119,7 +127,11 @@ do_start_hosts()
             do_log "Starting ${DESC} to ${HOST}"
             DAEMON="/usr/bin/ssh"
             PIDFILE="/var/run/${NAME}-${HOST}.pid"
-            DAEMON_ARGS="-qf ${USER}@${HOST} service ${NAME} restart ${ID}"
+            if [ "$USER = root ]; then
+                DAEMON_ARGS="-qf ${USER}@${HOST} service ${NAME} restart ${ID}"
+            else
+                DAEMON_ARGS="-qf ${USER}@${HOST} true"
+            fi
             do_start
             case "$?" in
                 0|1) [ "${VERBOSE}" != no ] && log_end_msg 0 ;;
@@ -194,11 +206,12 @@ do_stop()
         return "$RETVAL"
 }
 
+
 case "$1" in
   stop)
         [ -z "${HOSTS}" ] || do_stop_hosts
-        [ "$EUSER" = root ] && [ -z "${IFACES}" ] || do_stop_ifaces
-        [ "$EUSER" = root ] && [ -z "${BRIDGE}" ] || do_stop_bridge
+        [ -z "${IFACES}" ] || do_stop_ifaces
+        [ -z "${BRIDGE}" ] || do_stop_bridge
         ;;
   start|restart|force-reload)
         if [ -e "/var/run/ssvpnd-${ID}" ]; then
@@ -207,11 +220,11 @@ case "$1" in
             rm -f /var/run/ssvpnd-*
             touch "/var/run/ssvpnd-${ID}"
             [ -z "${HOSTS}" ] || do_stop_hosts
-            [ "$EUSER" = root ] &&[ -z "${IFACES}" ] || do_stop_ifaces
-            [ "$EUSER" = root ] &&[ -z "${BRIDGE}" ] || do_stop_bridge
+            [ -z "${IFACES}" ] || do_stop_ifaces
+            [ -z "${BRIDGE}" ] || do_stop_bridge
             sleep 1
-            [ "$EUSER" = root ] &&[ -z "${BRIDGE}" ] || do_start_bridge
-            [ "$EUSER" = root ] &&[ -z "${IFACES}" ] || do_start_ifaces
+            [ -z "${BRIDGE}" ] || do_start_bridge
+            [ -z "${IFACES}" ] || do_start_ifaces
             [ -z "${HOSTS}" ] || do_start_hosts
         fi
         ;;
