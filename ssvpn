@@ -125,7 +125,7 @@ do_start_hosts()
             do_log "Starting ${DESC} to ${HOST}"
             DAEMON="/usr/bin/ssh"
             PIDFILE="/var/run/${NAME}-${HOST}.pid"
-            if [ "$USER = root ]; then
+            if [ "$USER" = root ]; then
                 DAEMON_ARGS="-qf ${USER}@${HOST} service ${NAME} restart ${ID}"
             else
                 DAEMON_ARGS="-qf ${USER}@${HOST} true"
