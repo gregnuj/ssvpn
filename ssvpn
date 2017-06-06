@@ -25,6 +25,7 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="ssvpn service"
 NAME="ssvpn"
 USER=root
+BRIDGECTL=true
 SCRIPTNAME=/etc/init.d/${NAME}
 DEFAULTS=/etc/default/${NAME}
 LOG=/var/log/${NAME}
@@ -208,7 +209,7 @@ case "$1" in
   stop)
         [ -z "${HOSTS}" ] || do_stop_hosts
         [ -z "${IFACES}" ] || do_stop_ifaces
-        [ -z "${BRIDGE}" ] || do_stop_bridge
+        [ -z "${BRIDGE}" ] && [ -z "$BRIDGECTL" ] || do_stop_bridge
         ;;
   start|restart|force-reload)
         if [ -e "/var/run/ssvpnd-${ID}" ]; then
@@ -218,9 +219,9 @@ case "$1" in
             touch "/var/run/ssvpnd-${ID}"
             [ -z "${HOSTS}" ] || do_stop_hosts
             [ -z "${IFACES}" ] || do_stop_ifaces
-            [ -z "${BRIDGE}" ] || do_stop_bridge
+            [ -z "${BRIDGE}" ] && [ -z "$BRIDGECTL" ] || do_stop_bridge
             sleep 1
-            [ -z "${BRIDGE}" ] || do_start_bridge
+            [ -z "${BRIDGE}" ] && [ -z "$BRIDGECTL" ] || do_start_bridge
             [ -z "${IFACES}" ] || do_start_ifaces
             [ -z "${HOSTS}" ] || do_start_hosts
         fi
