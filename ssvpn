@@ -114,8 +114,8 @@ do_stop_ifaces()
             ip link set ${IFACE} down
             do_log  "Disassociating ${IFACE} from ${BRIDGE}"
             ip link set ${IFACE} nomaster
-            do_log  "Deleteing ${IFACE}"
-            ip link del ${IFACE}
+            #do_log  "Deleteing ${IFACE}"
+            #ip link del ${IFACE}
         done
 }
 
